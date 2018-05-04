@@ -7,15 +7,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.dialog.view.*
 
 class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteViewHolder> {
 
     private val mContext: Context
     private val mMovieQuotes = ArrayList<MovieQuote>()
+    private val mQuotesRef: CollectionReference
 
     constructor(context: Context) {
-        mContext = context;
+        mContext = context
+        mQuotesRef = FirebaseFirestore.getInstance().collection("quotes")
+
+
     }
 
     inner class MovieQuoteViewHolder : RecyclerView.ViewHolder, View.OnClickListener, View.OnLongClickListener {
