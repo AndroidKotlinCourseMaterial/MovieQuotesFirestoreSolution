@@ -3,26 +3,45 @@ package edu.rosehulman.boutell.moviequotes
 import android.app.AlertDialog
 import android.content.Context
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.dialog.view.*
 
 class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteViewHolder> {
 
     private val mContext: Context
     private val mMovieQuotes = ArrayList<MovieQuote>()
-    private val mQuotesRef: CollectionReference
+    private val mMovieQuotesRef: CollectionReference
+    private lateinit var mMovieQuotesSnapshotListener: ListenerRegistration
 
     constructor(context: Context) {
         mContext = context
-        mQuotesRef = FirebaseFirestore.getInstance().collection("quotes")
-
-
+        mMovieQuotesRef = FirebaseFirestore.getInstance().collection(Constants.QUOTES_PATH)
     }
+
+    fun addSnapshotListener() {
+        mMovieQuotesSnapshotListener = mMovieQuotesRef.addSnapshotListener {
+            snapshot, error ->
+            if (error != null) {
+                Log.e(Constants.TAG, "Error in listener: ", error);
+            }
+            if (snapshot != null) {
+
+            }
+
+        }
+    }
+
+    fun removeSnapshotListener() {
+        mMovieQuotesSnapshotListener.remove()
+    }
+
 
     inner class MovieQuoteViewHolder : RecyclerView.ViewHolder, View.OnClickListener, View.OnLongClickListener {
         val movieTextView: TextView

@@ -9,20 +9,31 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var adapter: MovieQuotesAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val adapter = MovieQuotesAdapter(this)
+        adapter = MovieQuotesAdapter(this)
         recycler_view.setHasFixedSize(true)
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.adapter = adapter
 
-
         fab.setOnClickListener { view ->
             adapter.showAddEditDialog()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        adapter.addSnapshotListener()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        adapter.removeSnapshotListener()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
