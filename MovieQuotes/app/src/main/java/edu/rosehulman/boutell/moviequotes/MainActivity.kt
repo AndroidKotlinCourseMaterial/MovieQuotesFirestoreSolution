@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
 
 
         fab.setOnClickListener { view ->
-            adapter.add(MovieQuote("Hi", "hi"))
+            adapter.showAddEditDialog()
         }
     }
 
