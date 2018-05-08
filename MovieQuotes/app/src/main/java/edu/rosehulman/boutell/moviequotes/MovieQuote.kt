@@ -19,7 +19,7 @@ class MovieQuote {
     @ServerTimestamp
     var created: Date? = null
 
-    @set:Exclude @get:Exclude var id = ""
+    @get:Exclude var id = ""
 
     constructor() {
     }
