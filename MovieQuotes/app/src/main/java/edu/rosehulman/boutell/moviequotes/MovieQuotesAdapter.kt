@@ -8,33 +8,34 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.*
 import kotlinx.android.synthetic.main.dialog.view.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteViewHolder> {
 
     private val mContext: Context
-    private val mMovieQuotes = ArrayList<MovieQuote>()
+    private var mMovieQuotes: List<DocumentSnapshot>
     private val mMovieQuotesRef: CollectionReference
     private lateinit var mMovieQuotesSnapshotListener: ListenerRegistration
 
     constructor(context: Context) {
         mContext = context
         mMovieQuotesRef = FirebaseFirestore.getInstance().collection(Constants.QUOTES_PATH)
+        mMovieQuotes = ArrayList()
     }
 
     fun addSnapshotListener() {
-        mMovieQuotesSnapshotListener = mMovieQuotesRef.addSnapshotListener {
+        mMovieQuotesSnapshotListener = mMovieQuotesRef.orderBy(Constants.CREATED_KEY, Query.Direction.DESCENDING).addSnapshotListener {
             snapshot, error ->
             if (error != null) {
-                Log.e(Constants.TAG, "Error in listener: ", error);
+                Log.e(Constants.TAG, "Error in listener: ", error)
             }
             if (snapshot != null) {
-
+                mMovieQuotes = snapshot.documents
+                notifyDataSetChanged()
             }
-
         }
     }
 
@@ -59,7 +60,7 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
         }
 
         override fun onLongClick(v: View?): Boolean {
-            remove(mMovieQuotes[adapterPosition])
+            remove(mMovieQuotes[adapterPosition].id)
             return true
         }
     }
@@ -72,42 +73,39 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
     override fun getItemCount() = mMovieQuotes.size
 
     override fun onBindViewHolder(holder: MovieQuoteViewHolder, position: Int) {
-        holder.quoteTextView.text = mMovieQuotes[position].quote
-        holder.movieTextView.text = mMovieQuotes[position].movie
+        holder.quoteTextView.text = mMovieQuotes[position].getString(Constants.QUOTE_KEY)
+        holder.movieTextView.text = mMovieQuotes[position].getString(Constants.MOVIE_KEY)
     }
 
-    fun add(movieQuote: MovieQuote) {
-        mMovieQuotes.add(0, movieQuote)
-        notifyItemInserted(0)
+    private fun add(quote: String, movie: String) {
+        mMovieQuotesRef.add(mapOf(Constants.QUOTE_KEY to quote, Constants.MOVIE_KEY to movie, Constants.CREATED_KEY to Date()))
     }
 
-    fun remove(movieQuote: MovieQuote) {
-        mMovieQuotes.remove(movieQuote)
-        notifyDataSetChanged()
+    private fun remove(id: String) {
+        mMovieQuotesRef.document(id).delete()
     }
 
-    fun edit(movieQuote: MovieQuote, quote: String, movie: String) {
-        movieQuote.quote = quote
-        movieQuote.movie = movie
-        notifyItemChanged(mMovieQuotes.indexOf(movieQuote))
+    private fun edit(id: String, quote: String, movie: String) {
+        mMovieQuotesRef.document(id).update(mapOf(Constants.QUOTE_KEY to quote, Constants.MOVIE_KEY to movie))
     }
 
-    fun showAddEditDialog(movieQuote: MovieQuote? = null) {
+    fun showAddEditDialog(movieQuote: DocumentSnapshot? = null) {
         val builder = AlertDialog.Builder(mContext);
         builder.setTitle(if (movieQuote == null) "Add a quote" else "Edit the quote")
         val view = LayoutInflater.from(mContext).inflate(R.layout.dialog, null, false)
         builder.setView(view)
 
-        view.quote_text_view_dialog.setText(movieQuote?.quote)
-        view.movie_text_view_dialog.setText(movieQuote?.movie)
+        view.quote_text_view_dialog.setText(movieQuote?.getString(Constants.QUOTE_KEY))
+        view.movie_text_view_dialog.setText(movieQuote?.getString(Constants.MOVIE_KEY))
 
         builder.setPositiveButton(android.R.string.ok, { dialog, whichButton ->
             val quote = view.quote_text_view_dialog.text.toString()
             val movie = view.movie_text_view_dialog.text.toString()
             if (movieQuote == null) {
-                add(MovieQuote(quote, movie))
+                add(quote, movie)
             } else {
-                edit(movieQuote, quote, movie)
+                edit(movieQuote.id, quote, movie)
+
             }
         })
         builder.show()
