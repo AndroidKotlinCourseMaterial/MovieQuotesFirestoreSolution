@@ -11,6 +11,7 @@ import android.widget.TextView
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import kotlinx.android.synthetic.main.dialog.view.*
 
 class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteViewHolder> {
@@ -26,15 +27,18 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
     }
 
     fun addSnapshotListener() {
-        mMovieQuotesSnapshotListener = mMovieQuotesRef.addSnapshotListener {
+        mMovieQuotesSnapshotListener = mMovieQuotesRef.orderBy(MovieQuote.CREATED_KEY, Query.Direction.DESCENDING).addSnapshotListener {
             snapshot, error ->
             if (error != null) {
                 Log.e(Constants.TAG, "Error in listener: ", error);
             }
             if (snapshot != null) {
-
+                mMovieQuotes.clear();
+                for (documentSnapshot in snapshot.documents) {
+                    mMovieQuotes.add(MovieQuote(documentSnapshot))
+                }
+                notifyDataSetChanged()
             }
-
         }
     }
 
@@ -77,19 +81,18 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
     }
 
     fun add(movieQuote: MovieQuote) {
-        mMovieQuotes.add(0, movieQuote)
-        notifyItemInserted(0)
+        mMovieQuotesRef.add(movieQuote)
     }
 
     fun remove(movieQuote: MovieQuote) {
-        mMovieQuotes.remove(movieQuote)
-        notifyDataSetChanged()
+
+        mMovieQuotesRef.document(movieQuote.id!!).delete()
     }
 
     fun edit(movieQuote: MovieQuote, quote: String, movie: String) {
         movieQuote.quote = quote
         movieQuote.movie = movie
-        notifyItemChanged(mMovieQuotes.indexOf(movieQuote))
+        mMovieQuotesRef.document(movieQuote.id!!).set(movieQuote)
     }
 
     fun showAddEditDialog(movieQuote: MovieQuote? = null) {
