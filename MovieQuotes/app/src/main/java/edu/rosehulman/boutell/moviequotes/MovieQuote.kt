@@ -5,19 +5,11 @@ import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.ServerTimestamp
 import java.util.*
 
-class MovieQuote {
+data class MovieQuote(var quote: String, var movie: String) {
     @ServerTimestamp var lastTouched: Date? = null
     @get:Exclude var id = ""
-    var quote = ""
-    var movie = ""
 
-    constructor() {
-    }
-
-    constructor(quote: String, movie: String) {
-        this.quote = quote
-        this.movie = movie
-    }
+    constructor(): this("", "")
 
     companion object {
         const val LAST_TOUCHED_KEY = "lastTouched"
