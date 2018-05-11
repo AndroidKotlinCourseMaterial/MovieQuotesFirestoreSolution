@@ -6,20 +6,10 @@ import com.google.firebase.firestore.ServerTimestamp
 import java.util.*
 
 class MovieQuote {
-
-    companion object {
-        val QUOTE_KEY = "quote"
-        val MOVIE_KEY = "movie"
-        val CREATED_KEY = "created"
-    }
-
+    @ServerTimestamp var lastTouched: Date? = null
+    @get:Exclude var id = ""
     var quote = ""
     var movie = ""
-
-    @ServerTimestamp
-    var created: Date? = null
-
-    @get:Exclude var id = ""
 
     constructor() {
     }
@@ -29,10 +19,14 @@ class MovieQuote {
         this.movie = movie
     }
 
-    constructor(documentSnapshot: DocumentSnapshot) {
-        quote = documentSnapshot.getString(QUOTE_KEY)
-        movie = documentSnapshot.getString(MOVIE_KEY)
-        id = documentSnapshot.id
+    companion object {
+        const val LAST_TOUCHED_KEY = "lastTouched"
+
+        fun fromSnapshot(documentSnapshot: DocumentSnapshot): MovieQuote {
+            val movieQuote = documentSnapshot.toObject(MovieQuote::class.java)
+            movieQuote.id = documentSnapshot.id
+            return movieQuote
+        }
     }
 }
 

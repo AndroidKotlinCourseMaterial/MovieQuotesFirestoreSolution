@@ -27,7 +27,7 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
     }
 
     fun addSnapshotListener() {
-        mMovieQuotesSnapshotListener = mMovieQuotesRef.orderBy(MovieQuote.CREATED_KEY, Query.Direction.DESCENDING).addSnapshotListener {
+        mMovieQuotesSnapshotListener = mMovieQuotesRef.orderBy(MovieQuote.LAST_TOUCHED_KEY, Query.Direction.DESCENDING).addSnapshotListener {
             snapshot, error ->
             if (error != null) {
                 Log.e(Constants.TAG, "Error in listener: ", error);
@@ -35,7 +35,10 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
             if (snapshot != null) {
                 mMovieQuotes.clear();
                 for (documentSnapshot in snapshot.documents) {
-                    mMovieQuotes.add(MovieQuote(documentSnapshot))
+                    mMovieQuotes.add(MovieQuote.fromSnapshot(documentSnapshot))
+//                    val movieQuote: MovieQuote = documentSnapshot.toObject(MovieQuote::class.java)
+//                    movieQuote.id = documentSnapshot.id
+//                    mMovieQuotes.add(movieQuote)
                 }
                 notifyDataSetChanged()
             }
@@ -85,14 +88,13 @@ class MovieQuotesAdapter : RecyclerView.Adapter<MovieQuotesAdapter.MovieQuoteVie
     }
 
     fun remove(movieQuote: MovieQuote) {
-
-        mMovieQuotesRef.document(movieQuote.id!!).delete()
+        mMovieQuotesRef.document(movieQuote.id).delete()
     }
 
     fun edit(movieQuote: MovieQuote, quote: String, movie: String) {
         movieQuote.quote = quote
         movieQuote.movie = movie
-        mMovieQuotesRef.document(movieQuote.id!!).set(movieQuote)
+        mMovieQuotesRef.document(movieQuote.id).set(movieQuote)
     }
 
     fun showAddEditDialog(movieQuote: MovieQuote? = null) {
