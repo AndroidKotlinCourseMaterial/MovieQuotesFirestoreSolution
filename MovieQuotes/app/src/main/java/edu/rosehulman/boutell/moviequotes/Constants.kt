@@ -1,6 +1,6 @@
 package edu.rosehulman.boutell.moviequotes
 
+// Helpful to use with debugging.
 object Constants {
-    val TAG = "MOVQUOTES"
-    val QUOTES_PATH = "quotes"
+    val TAG = "MQ"
 }
