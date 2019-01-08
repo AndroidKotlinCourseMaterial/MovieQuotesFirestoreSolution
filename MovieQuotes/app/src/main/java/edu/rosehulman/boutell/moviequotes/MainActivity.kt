@@ -6,10 +6,14 @@ import android.provider.Settings
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 
 class MainActivity : AppCompatActivity() {
     var defaultMovieQuote = MovieQuote("Quote", "Movie")
@@ -18,6 +22,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        val settings = FirebaseFirestoreSettings.Builder()
+            .setTimestampsInSnapshotsEnabled(true)
+            .setPersistenceEnabled(true)
+            .build()
+        FirebaseFirestore.getInstance().firestoreSettings = settings
 
         fab.setOnClickListener {
             // For testing
@@ -29,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.setHasFixedSize(true)
         recycler_view.adapter = adapter
+        adapter.addSnapshotListener()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

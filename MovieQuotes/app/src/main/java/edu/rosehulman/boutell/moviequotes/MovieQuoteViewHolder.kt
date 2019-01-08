@@ -27,7 +27,6 @@ class MovieQuoteViewHolder : RecyclerView.ViewHolder {
     }
 
     fun bind(movieQuote: MovieQuote) {
-        Log.d(Constants.TAG, "Binding VH")
         quoteTextView.text = movieQuote.quote
         movieTextView.text = movieQuote.movie
 
