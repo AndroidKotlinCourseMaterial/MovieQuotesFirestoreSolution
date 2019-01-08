@@ -19,7 +19,7 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
 
     fun addSnapshotListener() {
         listenerRegistration = movieQuotesRef
-            
+
             .orderBy(MovieQuote.LAST_TOUCHED_KEY, Query.Direction.DESCENDING)
             .addSnapshotListener { querySnapshot, e ->
                 if (e != null) {
