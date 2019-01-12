@@ -9,30 +9,40 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import com.google.firebase.FirebaseApp
+import android.widget.EditText
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.SetOptions
 
 class MainActivity : AppCompatActivity() {
-    var defaultMovieQuote = MovieQuote("Quote", "Movie")
     lateinit var adapter: MovieQuoteAdapter
+    private lateinit var settingsRef: DocumentReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val settings = FirebaseFirestoreSettings.Builder()
-            .setTimestampsInSnapshotsEnabled(true)
-            .setPersistenceEnabled(true)
-            .build()
-        FirebaseFirestore.getInstance().firestoreSettings = settings
+        settingsRef = FirebaseFirestore
+            .getInstance()
+            .collection("settings").document("settings")
 
         fab.setOnClickListener {
             // For testing
             // adapter.add(MovieQuote("Quote", "Movie"))
             adapter.showAddEditDialog()
+        }
+
+        settingsRef.addSnapshotListener { document, exception ->
+            if (exception != null) {
+                Log.w(Constants.TAG, "listen error", exception)
+                return@addSnapshotListener
+            }
+            var author = (document?.get("author") ?: "") as String
+            author_text_view.text = author
         }
 
         adapter = MovieQuoteAdapter(this)
@@ -62,7 +72,8 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_settings -> {
-                getWhichSettings()
+                updateAppTitle()
+//                getWhichSettings()
                 true
             }
             R.id.action_clear -> {
@@ -71,6 +82,29 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun updateAppTitle() {
+        var author = ""
+        settingsRef.get()
+            .addOnSuccessListener { document ->
+                author = (document["author"] ?: "") as String
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("App Author")
+                val authorEditText = EditText(this)
+                authorEditText.setText(author)
+                authorEditText.hint = "App author's name"
+                builder.setView(authorEditText)
+                builder.setPositiveButton(android.R.string.ok) { _, _ ->
+                    author = authorEditText.text.toString()
+                    Log.d(Constants.TAG, "Author: $author")
+                    val map = mapOf<String, Any>(Pair("author", author))
+                    settingsRef.set(map, SetOptions.merge())
+                }
+                builder.create().show()
+            } .addOnFailureListener {exception ->
+                Log.e(Constants.TAG, "Get error: $exception")
+            }
     }
 
     private fun changeFontSize(delta: Int) {

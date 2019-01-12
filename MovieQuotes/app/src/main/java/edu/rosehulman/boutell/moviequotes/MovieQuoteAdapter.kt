@@ -20,7 +20,7 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
     fun addSnapshotListener() {
         listenerRegistration = movieQuotesRef
 
-            .orderBy(MovieQuote.LAST_TOUCHED_KEY, Query.Direction.DESCENDING)
+            .orderBy(MovieQuote.LAST_TOUCHED_KEY)
             .addSnapshotListener { querySnapshot, e ->
                 if (e != null) {
                     Log.w(Constants.TAG, "listen error", e)
@@ -53,22 +53,20 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
     }
 
     private fun processSnapshotChanges(querySnapshot: QuerySnapshot) {
-        // Snapshots has documents and documentChanges.
-        // Since we want to handle add/edit/remove differently,
-        // we use the changes, which are flagged by type.
+        // Snapshots has documents and documentChanges which are flagged by type,
+        // so we can handle C,U,D differently.
         for (documentChange in querySnapshot.documentChanges) {
             val movieQuote = MovieQuote.fromSnapshot(documentChange.document)
             when (documentChange.type) {
                 DocumentChange.Type.ADDED -> {
                     Log.d(Constants.TAG, "Adding $movieQuote")
                     movieQuotes.add(0, movieQuote)
-                    notifyDataSetChanged()
+                    notifyItemInserted(0)
                 }
                 DocumentChange.Type.REMOVED -> {
                     Log.d(Constants.TAG, "Removing $movieQuote")
 //                    movieQuotes.remove(movieQuote)
 //                    notifyDataSetChanged()
-                    // TODO: get animation back. Need position.
                     for ((k, mq) in movieQuotes.withIndex()) {
                         if (mq.id == movieQuote.id) {
                             movieQuotes.removeAt(k)
@@ -150,7 +148,8 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
     }
 
     fun selectMovieQuote(position: Int) {
-        movieQuotes[position].showDark = !movieQuotes[position].showDark
-        notifyItemChanged(position)
+        var mq =movieQuotes[position]
+        mq.showDark = !mq.showDark
+        movieQuotesRef.document(mq.id).set(mq)
     }
 }
