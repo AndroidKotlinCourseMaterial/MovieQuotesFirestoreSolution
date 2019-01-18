@@ -4,18 +4,16 @@ import android.graphics.Color
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
 import android.widget.TextView
+import kotlinx.android.synthetic.main.row_view.view.*
 
-class MovieQuoteViewHolder : RecyclerView.ViewHolder {
+class MovieQuoteViewHolder(itemView: View, val adapter: MovieQuoteAdapter): RecyclerView.ViewHolder(itemView) {
     val quoteTextView: TextView = itemView.findViewById(R.id.quote_text_view)
     val movieTextView: TextView = itemView.findViewById(R.id.movie_text_view)
-    var adapter: MovieQuoteAdapter
     var cardView: CardView
 
-    constructor(itemView: View, adapter: MovieQuoteAdapter) : super(itemView) {
-        this.adapter = adapter
+    init {
         itemView.setOnClickListener {
             adapter.showAddEditDialog(adapterPosition)
         }
@@ -23,7 +21,7 @@ class MovieQuoteViewHolder : RecyclerView.ViewHolder {
             adapter.selectMovieQuote(adapterPosition)
             true
         }
-        cardView = itemView.findViewById(R.id.row_card_view)
+        cardView = itemView.row_card_view
     }
 
     fun bind(movieQuote: MovieQuote) {
@@ -38,5 +36,4 @@ class MovieQuoteViewHolder : RecyclerView.ViewHolder {
             cardView.setCardBackgroundColor(Color.WHITE)
         }
     }
-
 }

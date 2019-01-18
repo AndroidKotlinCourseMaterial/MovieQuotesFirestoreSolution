@@ -3,11 +3,13 @@ package edu.rosehulman.boutell.moviequotes
 import android.content.Context
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
-import android.system.Os.remove
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.android.synthetic.main.dialog_add_edit_quote.view.*
 
 class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteViewHolder>() {
@@ -133,22 +135,22 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
         builder.show()
     }
 
-    fun add(movieQuote: MovieQuote) {
+    private fun add(movieQuote: MovieQuote) {
         movieQuotesRef.add(movieQuote)
     }
 
-    fun edit(position: Int, quote: String, movie: String) {
+    private fun edit(position: Int, quote: String, movie: String) {
         movieQuotes[position].quote = quote
         movieQuotes[position].movie = movie
         movieQuotesRef.document(movieQuotes[position].id).set(movieQuotes[position])
     }
 
-    fun remove(position: Int) {
+    private fun remove(position: Int) {
         movieQuotesRef.document(movieQuotes[position].id).delete()
     }
 
     fun selectMovieQuote(position: Int) {
-        var mq =movieQuotes[position]
+        val mq =movieQuotes[position]
         mq.showDark = !mq.showDark
         movieQuotesRef.document(mq.id).set(mq)
     }

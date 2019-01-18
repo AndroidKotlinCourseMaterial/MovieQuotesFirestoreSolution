@@ -12,13 +12,12 @@ import android.view.MenuItem
 import android.widget.EditText
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.SetOptions
 
 class MainActivity : AppCompatActivity() {
-    lateinit var adapter: MovieQuoteAdapter
+    private lateinit var adapter: MovieQuoteAdapter
     private lateinit var settingsRef: DocumentReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,8 +40,7 @@ class MainActivity : AppCompatActivity() {
                 Log.w(Constants.TAG, "listen error", exception)
                 return@addSnapshotListener
             }
-            var author = (document?.get("author") ?: "") as String
-            author_text_view.text = author
+            author_text_view.text = (document?.get("author") ?: "") as String
         }
 
         adapter = MovieQuoteAdapter(this)
