@@ -19,9 +19,8 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
         .collection(Constants.QUOTES_COLLECTION)
     private lateinit var listenerRegistration: ListenerRegistration
 
-    fun addSnapshotListener() {
+    fun addQuoteSnapshotListener() {
         listenerRegistration = movieQuotesRef
-
             .orderBy(MovieQuote.LAST_TOUCHED_KEY)
             .addSnapshotListener { querySnapshot, e ->
                 if (e != null) {
@@ -31,6 +30,7 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
 //                populateLocalQuotes(querySnapshot!!)
                 processSnapshotChanges(querySnapshot!!)
             }
+
     }
 
     fun removeSnapshotListener() {
@@ -135,7 +135,7 @@ class MovieQuoteAdapter(var context: Context) : RecyclerView.Adapter<MovieQuoteV
         builder.show()
     }
 
-    private fun add(movieQuote: MovieQuote) {
+    fun add(movieQuote: MovieQuote) {
         movieQuotesRef.add(movieQuote)
     }
 

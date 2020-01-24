@@ -10,9 +10,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
+import android.widget.Toast
+import com.google.firebase.firestore.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -40,14 +39,14 @@ class MainActivity : AppCompatActivity() {
                 Log.w(Constants.TAG, "listen error", exception)
                 return@addSnapshotListener
             }
-            author_text_view.text = (document?.get("author") ?: "") as String
+            toolbar.title = (document?.get("author") ?: "") as String
         }
 
         adapter = MovieQuoteAdapter(this)
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.setHasFixedSize(true)
         recycler_view.adapter = adapter
-        adapter.addSnapshotListener()
+        adapter.addQuoteSnapshotListener()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -70,12 +69,27 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_settings -> {
+                getWhichSettings()
+                true
+            }
+            R.id.action_set_author -> {
                 updateAppTitle()
-//                getWhichSettings()
                 true
             }
             R.id.action_clear -> {
                 confirmClear()
+                true
+            }
+            R.id.action_show_favorite_movie -> {
+                showFavoriteMovie()
+                true
+            }
+            R.id.action_show_favorite_quote -> {
+                showFavoriteMovieQuote()
+                true
+            }
+            R.id.action_show_all_quotes -> {
+                showAllMovieQuotes()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -96,13 +110,57 @@ class MainActivity : AppCompatActivity() {
                     author = authorEditText.text.toString()
                     Log.d(Constants.TAG, "Author: $author")
                     val map = mapOf<String, Any>(Pair("author", author))
-                    settingsRef.set(map, SetOptions.merge())
+                    settingsRef.set(map)
+
                 }
                 builder.create().show()
             } .addOnFailureListener {exception ->
                 Log.e(Constants.TAG, "Get error: $exception")
             }
     }
+
+    private fun showFavoriteMovie() {
+        val favoriteMovieQuoteRef = FirebaseFirestore
+            .getInstance()
+            .collection("favorites")
+            .document("moviequote")
+
+        favoriteMovieQuoteRef.get().addOnSuccessListener {snapshot: DocumentSnapshot ->
+            val movie = (snapshot["movie"] ?: "") as String
+            Toast.makeText(this, movie, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun showFavoriteMovieQuote() {
+        val favoriteMovieQuoteRef = FirebaseFirestore
+            .getInstance()
+            .collection("favorites")
+            .document("moviequote")
+
+        favoriteMovieQuoteRef.get().addOnSuccessListener { snapshot: DocumentSnapshot ->
+
+            val mq = snapshot.toObject(MovieQuote::class.java)!!
+            Log.d(Constants.TAG, mq.toString())
+            adapter.add(mq)
+        }
+    }
+
+    private fun showAllMovieQuotes() {
+        val movieQuotesRef = FirebaseFirestore
+            .getInstance()
+            .collection("quotes")
+
+        movieQuotesRef.get().addOnSuccessListener { snapshot: QuerySnapshot ->
+            for (doc in snapshot) {
+                val mq = doc.toObject(MovieQuote::class.java)
+                Log.d(Constants.TAG, mq.toString())
+                adapter.add(mq)
+            }
+        }
+    }
+
+
+
 
     private fun changeFontSize(delta: Int) {
         // Increase the font size by delta sp
