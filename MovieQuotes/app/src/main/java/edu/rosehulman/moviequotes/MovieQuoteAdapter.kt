@@ -1,5 +1,6 @@
 package edu.rosehulman.moviequotes
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.util.Log
@@ -18,18 +19,7 @@ class MovieQuoteAdapter(val context: Context) : RecyclerView.Adapter<MovieQuoteV
     private lateinit var listenerRegistration: ListenerRegistration
 
     init {
-//        addBasicQuotesListener()
         addBetterQuotesListener()
-    }
-
-    private fun addBasicQuotesListener() {
-        listenerRegistration = quotesRef.addSnapshotListener { snapshot: QuerySnapshot?, exception: FirebaseFirestoreException? ->
-            movieQuotes.clear()
-            for (doc in snapshot!!) {
-                movieQuotes.add(MovieQuote.from(doc))
-            }
-            notifyDataSetChanged()
-        }
     }
 
     private fun addBetterQuotesListener() {
